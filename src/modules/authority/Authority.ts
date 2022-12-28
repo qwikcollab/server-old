@@ -12,6 +12,7 @@ export class Authority {
       updates: changes.updates,
       socketId: changes.socketId,
       head: changes.head,
+      userId: changes.userId,
     });
   }
 

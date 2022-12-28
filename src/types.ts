@@ -18,7 +18,8 @@ export interface CursorPosition {
 
 export interface EditorChangesMessage extends CursorPosition {
   version: number;
-  socketId: string;
+  socketId?: string;
+  userId: string;
   updates: {
     serializedUpdates: JSON;
     clientID: string;

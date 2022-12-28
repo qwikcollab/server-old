@@ -13,11 +13,10 @@ export default function (io: Server) {
     socket.on('join-room', (msg: JoinRoomMessage, callback) => {
       const user = { ...msg, socketId: socket.id };
       RoomsState.addUser(user);
-      // console.log('join room id', so)
+
       socket.join(msg.roomId);
 
       const info = Authority.getRoomData(msg.roomId);
-      console.log('existing state', info.doc);
       const existingState: ExistingState = {
         users: RoomsState.getUsers(msg.roomId),
         updates: info.updates,
@@ -41,6 +40,7 @@ export default function (io: Server) {
       if (!room) {
         return;
       }
+      let userId = RoomsState.findUser(room, socket.id)?.userId ?? ''; // TODO error-handling for ''
       console.log('update from client ', room);
       Authority.pullUpdatesAnsSyncWithClient(
         {
@@ -49,12 +49,13 @@ export default function (io: Server) {
           roomId: room,
           socketId: socket.id,
           head,
+          userId,
         },
         io,
       );
     });
 
-    socket.on('positionUpdateFromClient', ({ head, anchor }) => {
+    socket.on('positionUpdateFromClient', ({ head, anchor, userId }) => {
       console.log('position update from client');
       const room = Array.from(socket.rooms).find((id) => id.length === 36);
       if (!room) {
@@ -64,6 +65,7 @@ export default function (io: Server) {
         socketId: socket.id,
         head,
         anchor,
+        userId,
       });
     });
   });
