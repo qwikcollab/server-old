@@ -10,5 +10,5 @@ const io = new Server(server);
 sockets(io);
 
 server.listen(process.env.PORT, () => {
-  console.log(`server started at port ${process.env.PORT}!!`);
+  console.log(`qc server has started at port ${process.env.PORT}!!`);
 });
