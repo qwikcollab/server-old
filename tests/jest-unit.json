@@ -1,0 +1,16 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": "../",
+  "roots": ["<rootDir>", "src"],
+  "modulePaths": ["<rootDir>", "src"],
+  "moduleDirectories": ["node_modules", "src"],
+  "testEnvironment": "node",
+  "testRegex": ".spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)sx?$": "@swc/jest"
+  },
+  "coveragePathIgnorePatterns": ["<rootDir>/node_modules/"],
+  "coverageDirectory": "coverage",
+  "collectCoverageFrom": ["<rootDir>/src/**/*.{ts,js}"],
+  "testPathIgnorePatterns": ["tests/mocks"]
+}
