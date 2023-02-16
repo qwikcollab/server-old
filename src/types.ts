@@ -4,11 +4,11 @@ import { Text } from '@codemirror/state';
 export interface JoinRoomMessage {
   roomId: string;
   name: string;
-  userId?: string;
+  userId: string;
 }
 
 export interface User extends JoinRoomMessage {
-  socketId: string;
+  userId: string;
 }
 
 export interface CursorPosition {
@@ -18,7 +18,6 @@ export interface CursorPosition {
 
 export interface EditorChangesMessage extends CursorPosition {
   version: number;
-  socketId?: string;
   userId: string;
   updates: {
     serializedUpdates: JSON;

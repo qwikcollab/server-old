@@ -1,14 +1,21 @@
 import * as dotenv from 'dotenv';
-import * as http from 'http';
-import app from './app';
-import { Server } from 'socket.io';
-import sockets from './modules/sockets';
+import express, { Application } from 'express';
+import Server from './boot/Server';
+import cors from 'cors';
+import { AuthController } from './modules/auth/AuthController';
 
 dotenv.config();
-const server = http.createServer(app);
-const io = new Server(server);
-sockets(io);
 
-server.listen(process.env.PORT, () => {
-  console.log(`qc server has started at port ${process.env.PORT}!!`);
-});
+const PORT = parseInt(process.env.PORT!) || 8100;
+const app: Application = express();
+const server: Server = new Server(app, PORT);
+
+// Bootstrap
+Promise.resolve()
+  // .then(() => server.initDatabase())
+  // .then(() => Cache.initCache())
+  .then(() => {
+    server.loadMiddlewares([cors()]);
+    server.loadControllers([new AuthController()]);
+    server.run();
+  });

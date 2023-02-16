@@ -1,17 +1,14 @@
 import { Server } from 'socket.io';
-import {
-  ExistingState,
-  JoinRoomMessage,
-} from '../../types';
+import { ExistingState, JoinRoomMessage } from '../../types';
 import { RoomsState } from '../states/RoomState';
 import { Authority } from '../authority/Authority';
+import { SocketSessionState } from '../states/SocketSessionState';
 
 export default function (io: Server) {
   io.on('connection', async (socket) => {
-    console.log(`Socket id ${socket.id} connected`);
-
     socket.on('join-room', (msg: JoinRoomMessage, callback) => {
-      const user = { ...msg, socketId: socket.id };
+      const user = msg;
+      SocketSessionState.userMap[socket.id] = msg.userId;
       RoomsState.addUser(user);
 
       socket.join(msg.roomId);
@@ -24,15 +21,18 @@ export default function (io: Server) {
       };
       callback(existingState);
 
-      socket.broadcast.to(msg.roomId).emit('user-joined', user);
+      // Send to everyone in room
+      socket.to(msg.roomId).emit('user-joined', user);
     });
 
     socket.on('disconnecting', () => {
       console.log('user disconnecting');
-      socket.rooms.forEach((roomId: string) =>
-        RoomsState.removeUser(RoomsState.findUser(roomId, socket.id)),
-      );
-      socket.broadcast.emit('user-left', socket.id);
+      socket.rooms.forEach((roomId: string) => {
+        const userId = SocketSessionState.userMap[socket.id];
+        RoomsState.removeUser(roomId, userId);
+        socket.broadcast.to(roomId).emit('user-left', userId);
+      });
+      delete SocketSessionState.userMap[socket.id];
     });
 
     socket.on('updateFromClient', ({ version, updates, head }) => {
@@ -40,20 +40,43 @@ export default function (io: Server) {
       if (!room) {
         return;
       }
-      let userId = RoomsState.findUser(room, socket.id)?.userId ?? ''; // TODO error-handling for ''
+      let userId = SocketSessionState.userMap[socket.id] ?? ''; // TODO error-handling for ''
       console.log('update from client ', room);
       Authority.pullUpdatesAnsSyncWithClient(
         {
           version,
           updates,
           roomId: room,
-          socketId: socket.id,
           head,
           userId,
         },
         io,
       );
     });
+
+    socket.on(
+      'getPendingUpdates',
+      ({ version, roomId, userId, name }, callback) => {
+        const user = { userId, roomId, name };
+        SocketSessionState.userMap[socket.id] = userId;
+        RoomsState.addUser(user);
+        socket.join(roomId);
+
+        // send to everyone except sender
+        socket.to(roomId).emit('user-joined', user);
+
+        const { updates } = Authority.getRoomData(roomId);
+        const pendingUpdates = updates
+          .slice(version, updates.length)
+          .map((u) => {
+            return {
+              serializedUpdates: u.changes.toJSON(),
+              clientId: u.clientID,
+            };
+          });
+        callback(pendingUpdates);
+      },
+    );
 
     socket.on('positionUpdateFromClient', ({ head, anchor, userId }) => {
       console.log('position update from client');

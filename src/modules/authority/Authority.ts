@@ -6,11 +6,10 @@ export class Authority {
   static _data: { [roomId: string]: RoomData } = {};
 
   public static pushUpdates(changes: EditorChangesMessage, io: Server) {
-    console.log('pushing updates', changes.updates);
+    // Send to room
     io.to(changes.roomId).emit('updateFromServer', {
       version: changes.version,
       updates: changes.updates,
-      socketId: changes.socketId,
       head: changes.head,
       userId: changes.userId,
     });
@@ -28,7 +27,6 @@ export class Authority {
     } else {
       console.log('match', existingUpdates);
       changes.updates.forEach((u) => {
-        console.log(u.serializedUpdates);
         if (!u.serializedUpdates) {
           return;
         }
@@ -48,12 +46,12 @@ export class Authority {
     return this._data[roomId];
   }
 
-  public static getUpdates(roomId: string) {
+  private static getUpdates(roomId: string) {
     const data = this.getRoomData(roomId);
     return data.updates;
   }
 
-  public static applyUpdate(
+  private static applyUpdate(
     roomId: string,
     changeSet: ChangeSet,
     clientId: string,
