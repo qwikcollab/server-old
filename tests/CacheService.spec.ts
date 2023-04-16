@@ -1,25 +1,21 @@
-import {
-  User,
-  UserRepository,
-} from '../src/modules/shared/repository/UserRepository';
-// @ts-ignore
 import { mockUser1, mockUser2 } from './mocks/users.mock';
+import { CacheService } from '../src/modules/cache/CacheService';
 
 describe('Test user repository', () => {
-  const userRepository = new UserRepository();
+  const cacheService = new CacheService();
 
   it('It can save and find user', async () => {
-    userRepository.create(mockUser1);
-    const user = await userRepository.find(mockUser1.userId);
+    cacheService.create(mockUser1);
+    const user = await cacheService.find(mockUser1.userId);
 
     expect(user).toEqual(mockUser1);
   });
 
   it('It can save and find multiple users', async () => {
-    userRepository.create(mockUser1);
-    userRepository.create(mockUser2);
+    cacheService.create(mockUser1);
+    cacheService.create(mockUser2);
 
-    const users = await userRepository.findAllIn([
+    const users = await cacheService.findAllIn([
       mockUser1.userId,
       mockUser2.userId,
       'id-not-present',

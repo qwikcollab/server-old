@@ -1,14 +1,16 @@
 import BaseController, { Methods } from '../shared/BaseController';
 import { AuthService } from './AuthService';
 import { NextFunction, Request, Response } from 'express';
+import { myContainer } from '../../inversify.config';
+import { TYPES } from '../../types';
 
 export class AuthController extends BaseController {
-  private authService: AuthService;
   public path: string = '';
 
-  public constructor() {
+  public constructor(
+    public authService: AuthService = myContainer.get(TYPES.AuthService),
+  ) {
     super();
-    this.authService = new AuthService();
   }
 
   routes = [
@@ -21,8 +23,8 @@ export class AuthController extends BaseController {
   ];
 
   async register(req: Request, res: Response, next: NextFunction) {
-    const { name, email, userId } = req.body;
-    const resp = this.authService.registerUser({ name, email, userId });
+    const credential = req.body?.credential;
+    const resp = await this.authService.verifyGoogleToken(credential);
     super.sendSuccess(res, resp);
   }
 }

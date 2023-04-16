@@ -25,6 +25,7 @@ export default class Server {
 
   public loadMiddlewares(middlewares: Array<RequestHandler>): void {
     middlewares.forEach((middleware) => {
+      console.log('applying middleware');
       this.app.use(middleware);
     });
   }

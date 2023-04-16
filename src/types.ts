@@ -1,5 +1,6 @@
 import { Update } from '@codemirror/collab';
 import { Text } from '@codemirror/state';
+import { ICacheService } from './modules/cache/CacheService';
 
 export interface JoinRoomMessage {
   roomId: string;
@@ -36,3 +37,8 @@ export interface ExistingState {
   doc: Text;
   updates: Update[];
 }
+
+export const TYPES = {
+  AuthService: Symbol.for('IAuthService'),
+  CacheService: Symbol.for('ICacheService'),
+};

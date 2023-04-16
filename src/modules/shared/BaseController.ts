@@ -1,9 +1,5 @@
-import {
-  Response,
-  Request,
-  NextFunction,
-  Router,
-} from 'express';
+import { Response, Request, NextFunction, Router } from 'express';
+import { inject, injectable } from 'inversify';
 
 export enum Methods {
   GET = 'GET',

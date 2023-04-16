@@ -1,13 +1,26 @@
-import db from '../../../boot/RedisClient';
+import { User } from '../../types';
+import db from '../../boot/RedisClient';
+import { injectable } from 'inversify';
 
-export interface User {
-  name: string;
-  email?: string;
-  userId: string;
+export interface ICacheService {
+  addUser(user: User): void;
+  getUsers(token: string): any;
+  find(userId: string): Promise<User | null>;
+  findAllIn(userIds: string[]): Promise<User[]>;
 }
 
-export class UserRepository {
+@injectable()
+export class CacheService implements ICacheService {
   private store: Record<string, User> = {};
+
+  public async addUser(user: User) {
+    db.sadd(`room:${user.roomId}`, user.userId);
+  }
+
+  public async getUsers(roomId: string) {
+    const userIds = await db.smembers(`room:${roomId}`);
+    return this.findAllIn(userIds);
+  }
 
   public async find(userId: string): Promise<User | null> {
     const user = await db.hget('users', userId);
